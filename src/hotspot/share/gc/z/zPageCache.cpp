@@ -195,3 +195,19 @@ void ZPageCache::flush(ZList<ZPage>* to, size_t requested) {
 
   _available -= flushed;
 }
+
+void ZPageCache::loan_pages(size_t flushed_page_count, uint8_t flushed_page_type, ZList<ZPage> &list) {
+  size_t flushed = 0;
+  size_t requested_bytes = 0;
+  if (flushed_page_type == ZPageTypeSmall) {
+    requested_bytes = flushed_page_count * ZPageSizeSmall;
+    flush_per_numa_lists(&_small, requested_bytes, &list, &flushed);
+  } else if (flushed_page_type == ZPageTypeMedium) {
+    requested_bytes = flushed_page_count * ZPageSizeMedium;
+    flush_list(&_medium, requested_bytes, &list, &flushed);
+  } else {
+    ShouldNotReachHere();
+  }
+  _available -= flushed;
+  guarantee(flushed == requested_bytes, "Total size of requested pages should equal to flushed size.");
+}

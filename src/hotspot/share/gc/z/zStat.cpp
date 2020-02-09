@@ -61,13 +61,6 @@ struct ZStatSamplerData {
   }
 };
 
-struct ZStatCounterData {
-  uint64_t _counter;
-
-  ZStatCounterData() :
-    _counter(0) {}
-};
-
 //
 // Stat sampler history
 //
@@ -796,31 +789,33 @@ void ZStatInc(const ZStatUnsampledCounter& counter, uint64_t increment) {
 //
 // Stat allocation rate
 //
+template<>
 const ZStatUnsampledCounter ZStatAllocRate::_counter("Allocation Rate");
-TruncatedSeq                ZStatAllocRate::_rate(ZStatAllocRate::sample_window_sec * ZStatAllocRate::sample_hz);
-TruncatedSeq                ZStatAllocRate::_rate_avg(ZStatAllocRate::sample_window_sec * ZStatAllocRate::sample_hz);
+template<>
+const ZStatUnsampledCounter ZStatSmallPageAllocRate::_counter("Allocation Rate (Small Pages)");
+template<>
+const ZStatUnsampledCounter ZStatMediumPageAllocRate::_counter("Allocation Rate (Medium Pages)");
 
-const ZStatUnsampledCounter& ZStatAllocRate::counter() {
-  return _counter;
-}
+template<>
+const uint64_t ZStatAllocRate::sample_window_sec = 1;
+// Page allocation rate is used for page cache balance, which requires longer sample window.
+template<>
+const uint64_t ZStatSmallPageAllocRate::sample_window_sec = ZPageAllocRateSampleWindow;
+template<>
+const uint64_t ZStatMediumPageAllocRate::sample_window_sec = ZPageAllocRateSampleWindow;
 
-uint64_t ZStatAllocRate::sample_and_reset() {
-  const ZStatCounterData bytes_per_sample = _counter.collect_and_reset();
-  const uint64_t bytes_per_second = bytes_per_sample._counter * sample_hz;
-
-  _rate.add(bytes_per_second);
-  _rate_avg.add(_rate.avg());
-
-  return bytes_per_second;
-}
-
-double ZStatAllocRate::avg() {
-  return _rate.avg();
-}
-
-double ZStatAllocRate::avg_sd() {
-  return _rate_avg.sd();
-}
+template<>
+TruncatedSeq ZStatAllocRate::_rate(ZStatAllocRate::sample_window_sec * ZStatAllocRate::sample_hz);
+template<>
+TruncatedSeq ZStatAllocRate::_rate_avg(ZStatAllocRate::sample_window_sec * ZStatAllocRate::sample_hz);
+template<>
+TruncatedSeq ZStatSmallPageAllocRate::_rate(ZStatSmallPageAllocRate::sample_window_sec * ZStatSmallPageAllocRate::sample_hz);
+template<>
+TruncatedSeq ZStatSmallPageAllocRate::_rate_avg(ZStatSmallPageAllocRate::sample_window_sec * ZStatSmallPageAllocRate::sample_hz);
+template<>
+TruncatedSeq ZStatMediumPageAllocRate::_rate(ZStatMediumPageAllocRate::sample_window_sec * ZStatMediumPageAllocRate::sample_hz);
+template<>
+TruncatedSeq ZStatMediumPageAllocRate::_rate_avg(ZStatMediumPageAllocRate::sample_window_sec * ZStatMediumPageAllocRate::sample_hz);
 
 //
 // Stat thread
@@ -1049,6 +1044,10 @@ double ZStatCycle::time_since_last() {
   const Ticks now = Ticks::now();
   const Tickspan time_since_last = now - _end_of_last;
   return time_since_last.seconds();
+}
+
+bool ZStatCycle::is_warm() {
+  return _ncycles >= 3;
 }
 
 //

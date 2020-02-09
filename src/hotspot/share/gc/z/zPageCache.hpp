@@ -53,6 +53,10 @@ public:
   void free_page(ZPage* page);
 
   void flush(ZList<ZPage>* to, size_t requested);
+  void loan_pages(size_t flushed_page_count, uint8_t flushed_page_type, ZList<ZPage> &list);
+
+  size_t small_page_count() const;
+  size_t medium_page_count() const;
 };
 
 #endif // SHARE_GC_Z_ZPAGECACHE_HPP

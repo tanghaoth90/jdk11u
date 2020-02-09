@@ -28,6 +28,7 @@
 #include "gc/z/zList.hpp"
 #include "gc/z/zLock.hpp"
 #include "gc/z/zPageCache.hpp"
+#include "gc/z/zPageCacheBalance.hpp"
 #include "gc/z/zPhysicalMemory.hpp"
 #include "gc/z/zPreMappedMemory.hpp"
 #include "gc/z/zVirtualMemory.hpp"
@@ -37,6 +38,7 @@ class ZPageAllocRequest;
 
 class ZPageAllocator {
   friend class VMStructs;
+  friend class ZPageCacheBalance;
 
 private:
   ZLock                    _lock;

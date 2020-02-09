@@ -287,6 +287,13 @@ public:
   }
 };
 
+struct ZStatCounterData {
+  uint64_t _counter;
+
+  ZStatCounterData() :
+          _counter(0) {}
+};
+
 //
 // Stat sample/increment
 //
@@ -297,22 +304,40 @@ void ZStatInc(const ZStatUnsampledCounter& counter, uint64_t increment = 1);
 //
 // Stat allocation rate
 //
-class ZStatAllocRate : public AllStatic {
+template<uint8_t type> class ZStatAllocRateType : public AllStatic {
 private:
   static const ZStatUnsampledCounter _counter;
   static TruncatedSeq                _rate;     // B/s
   static TruncatedSeq                _rate_avg; // B/s
 
 public:
-  static const uint64_t sample_window_sec = 1; // seconds
-  static const uint64_t sample_hz         = 10;
+  static const uint64_t sample_window_sec;
+  static const uint64_t sample_hz = 10;
 
-  static const ZStatUnsampledCounter& counter();
-  static uint64_t sample_and_reset();
+  static const ZStatUnsampledCounter& counter() {
+    return _counter;
+  }
+  static uint64_t sample_and_reset() {
+    const ZStatCounterData bytes_per_sample = _counter.collect_and_reset();
+    const uint64_t bytes_per_second = bytes_per_sample._counter * sample_hz;
 
-  static double avg();
-  static double avg_sd();
+    _rate.add(bytes_per_second);
+    _rate_avg.add(_rate.avg());
+
+    return bytes_per_second;
+  }
+
+  static double avg() {
+    return _rate.avg();
+  }
+  static double avg_sd() {
+    return _rate_avg.sd();
+  }
 };
+
+typedef ZStatAllocRateType<-1> ZStatAllocRate;
+typedef ZStatAllocRateType<ZPageTypeSmall> ZStatSmallPageAllocRate;
+typedef ZStatAllocRateType<ZPageTypeMedium> ZStatMediumPageAllocRate;
 
 //
 // Stat thread
@@ -352,6 +377,8 @@ public:
   static uint64_t ncycles();
   static const AbsSeq& normalized_duration();
   static double time_since_last();
+
+  static bool is_warm();
 };
 
 //

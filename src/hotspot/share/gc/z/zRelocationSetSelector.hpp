@@ -40,6 +40,7 @@ private:
   ZArray<const ZPage*> _registered_pages;
   const ZPage**        _sorted_pages;
   size_t               _nselected;
+  size_t               _selected_to;
   size_t               _relocating;
   size_t               _fragmentation;
 
@@ -56,6 +57,7 @@ public:
 
   const ZPage* const* selected() const;
   size_t nselected() const;
+  size_t selected_to() const;
   size_t relocating() const;
   size_t fragmentation() const;
 };
@@ -79,6 +81,9 @@ public:
   size_t garbage() const;
   size_t relocating() const;
   size_t fragmentation() const;
+
+  size_t small_selected_to() const;
+  size_t medium_selected_to() const;
 };
 
 #endif // SHARE_GC_Z_ZRELOCATIONSETSELECTOR_HPP

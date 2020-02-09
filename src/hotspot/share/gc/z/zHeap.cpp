@@ -430,6 +430,15 @@ void ZHeap::select_relocation_set() {
   ZStatHeap::set_at_select_relocation_set(selector.live(),
                                           selector.garbage(),
                                           reclaimed());
+
+  if (ZBalancePageCache) {
+    ZPageCacheBalance pageCacheBalance(&_page_allocator,
+                                       &_pagetable,
+                                       true /* before relocation */,
+                                       selector.small_selected_to(),
+                                       selector.medium_selected_to());
+    pageCacheBalance.balance();
+  }
 }
 
 void ZHeap::prepare_relocation_set() {
@@ -505,6 +514,14 @@ void ZHeap::relocate() {
   ZStatRelocation::set_at_relocate_end(success);
   ZStatHeap::set_at_relocate_end(capacity(), allocated(), reclaimed(),
                                  used(), used_high(), used_low());
+
+  if (ZBalancePageCache) {
+    ZPageCacheBalance pageCacheBalance(&_page_allocator,
+                                       &_pagetable,
+                                       false /* after relocation */,
+                                       0, 0 /* small_selected_to and medium_selected_to are useless after relocation */);
+    pageCacheBalance.balance();
+  }
 }
 
 void ZHeap::object_iterate(ObjectClosure* cl, bool visit_referents) {

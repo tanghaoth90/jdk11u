@@ -98,6 +98,18 @@
           "Apply load barrier optimizations")                               \
                                                                             \
   develop(bool, ZVerifyLoadBarriers, false,                                 \
-          "Verify that reference loads are followed by barriers")
+          "Verify that reference loads are followed by barriers")           \
+                                                                            \
+  product(bool, ZBalancePageCache, false,                                   \
+          "Balance small and medium cached pages to avoid "                 \
+          "page cache flush while relocating")                              \
+                                                                            \
+  diagnostic(double, ZMinPageCachePercent, 1.0,                             \
+          "Lower bound of percentage of heap capacity for "                 \
+          "cached small or medium pages")                                   \
+                                                                            \
+  diagnostic(uintx, ZPageAllocRateSampleWindow, 60,                         \
+          "Sample windows (seconds) for small and medium page "             \
+          "allocation rate")
 
 #endif // SHARE_GC_Z_Z_GLOBALS_HPP

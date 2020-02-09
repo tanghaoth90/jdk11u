@@ -415,6 +415,13 @@ ZPage* ZPageAllocator::alloc_page(uint8_t type, size_t size, ZAllocationFlags fl
     const size_t bytes = page->size();
     ZStatInc(ZCounterAllocationRate, bytes);
     ZStatInc(ZStatAllocRate::counter(), bytes);
+    if (ZBalancePageCache) {
+      if (type == ZPageTypeSmall) {
+        ZStatInc(ZStatSmallPageAllocRate::counter(), bytes);
+      } else if (type == ZPageTypeMedium) {
+        ZStatInc(ZStatMediumPageAllocRate::counter(), bytes);
+      }
+    }
   }
 
   return page;

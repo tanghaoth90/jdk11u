@@ -136,6 +136,7 @@ void ZRelocationSetSelectorGroup::select() {
 
   // Finalize selection
   _nselected = selected_from;
+  _selected_to = selected_to;
 
   // Update statistics
   _relocating = from_size;
@@ -154,6 +155,10 @@ const ZPage* const* ZRelocationSetSelectorGroup::selected() const {
 
 size_t ZRelocationSetSelectorGroup::nselected() const {
   return _nselected;
+}
+
+size_t ZRelocationSetSelectorGroup::selected_to() const {
+  return _selected_to;
 }
 
 size_t ZRelocationSetSelectorGroup::relocating() const {
@@ -222,4 +227,12 @@ size_t ZRelocationSetSelector::relocating() const {
 
 size_t ZRelocationSetSelector::fragmentation() const {
   return _fragmentation + _small.fragmentation() + _medium.fragmentation();
+}
+
+size_t ZRelocationSetSelector::small_selected_to() const {
+  return _small.selected_to();
+}
+
+size_t ZRelocationSetSelector::medium_selected_to() const {
+  return _medium.selected_to();
 }

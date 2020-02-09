@@ -41,6 +41,10 @@ void ZDirector::sample_allocation_rate() const {
   // Sample allocation rate. This is needed by rule_allocation_rate()
   // below to estimate the time we have until we run out of memory.
   const double bytes_per_second = ZStatAllocRate::sample_and_reset();
+  if (ZBalancePageCache) {
+    ZStatSmallPageAllocRate::sample_and_reset();
+    ZStatMediumPageAllocRate::sample_and_reset();
+  }
 
   log_debug(gc, alloc)("Allocation Rate: %.3fMB/s, Avg: %.3f(+/-%.3f)MB/s",
                        bytes_per_second / M,

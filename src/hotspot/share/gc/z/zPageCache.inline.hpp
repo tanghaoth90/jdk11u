@@ -30,4 +30,17 @@ inline size_t ZPageCache::available() const {
   return _available;
 }
 
+inline size_t ZPageCache::small_page_count() const {
+  size_t count = 0;
+  const uint32_t numa_count = ZNUMA::count();
+  for (uint32_t numa_id = 0; numa_id < numa_count; ++numa_id) {
+    count += _small.get(numa_id).size();
+  }
+  return count;
+}
+
+inline size_t ZPageCache::medium_page_count() const {
+  return _medium.size();
+}
+
 #endif // SHARE_GC_Z_ZPAGECACHE_INLINE_HPP
